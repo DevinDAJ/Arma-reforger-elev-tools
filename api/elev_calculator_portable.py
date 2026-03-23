@@ -12,11 +12,11 @@ class Colors:
 def get_ballistic_data(range_to_target):
     # Get data from config ballistic data
     list_data = list(ballistic_data_info.keys())
-    print("Available ballistic type:")
+    print("\nAvailable ballistic type:")
     # Display the menu choice
     i=0
     available_type = []
-    for b_name in enumerate(list_data):        
+    for j, b_name in enumerate(list_data):        
         range_list = ballistic_data_info[b_name].keys()
         min_range = min(range_list)
         max_range = max(range_list)
@@ -26,12 +26,15 @@ def get_ballistic_data(range_to_target):
             print(f"{i}. {b_name} " +" | Supported Range(m): "+f"{min_range}-{max_range}")
     # Handle user input
     while True:
+        if len(available_type) == 0:
+            print(f"No Data Available for range: {range_to_target}")
+            main()
         try:
             select_data = int(input(f"Select the following ballistic type: "))
             if 1 <= select_data <= len(available_type):
                 selected_key = available_type[select_data - 1]
                 print(f"You Selected {selected_key}\n")
-                return selected_key
+                return ballistic_data_info[selected_key]
             else:
                 print("Invalid Selection!")
         except ValueError as e:
@@ -66,7 +69,7 @@ def get_coordinates():
             return float(x1),float(y1),float(x2),float(y2)
         except ValueError as e:
             print(str(e))
-            
+
 def end_menu():
     while True:
         user_input = input("Do you want to recalculate? Y/N: ")
@@ -80,27 +83,27 @@ def end_menu():
 
 # Running main program
 def main():
-    ballistic_type = get_ballistic_data()
-    
-    
     while True:
         measurement_method = input("Manual measurement (Without Coordinates)? Y/N: ")
         if measurement_method.lower() == "y":
             range_to_target = get_range_input(ballistic_min_range,ballistic_max_range)
+            ballistic_type, ballistic_min_range, ballistic_max_range = get_ballistic_data(range_to_target)
             elevation_difference = get_elevation_input()
-            elevation_mils = calculate_elevation(range_to_target, ballistic_data, elevation_difference)
+            elevation_mils = calculate_elevation(range_to_target, ballistic_type, elevation_difference)
             break
         elif measurement_method.lower() == "n":
             x1,y1,x2,y2 = get_coordinates()
-            elevation_difference = get_elevation_input()            
-            elevation_mils, degrees_angle, mills_angle, range_to_target = calculate_elevation_by_coordinates(x1, y1, x2, y2, ballistic_data, elevation_difference)                
+            elevation_difference = get_elevation_input()
+            range_to_target = calculate_coordinate_distance(x1,y1,x2,y2)
+            print(f"\nDistance(m): "+ Colors.BLUE+f"{range_to_target:.2f}"+Colors.ENDC)
+            ballistic_type = get_ballistic_data(range_to_target)          
+            elevation_mils, degrees_angle, mills_angle, range_to_target = calculate_elevation_by_coordinates(x1, y1, x2, y2, ballistic_type, elevation_difference)                
             print("Coordinates: " + Colors.YELLOW + f"({x1}, {y1})" + Colors.ENDC + " to " + Colors.YELLOW + f"({x2}, {y2})" + Colors.ENDC)
             print(f"Degrees (Bearing from North): " + Colors.GREEN + f"{degrees_angle:.2f} °" + Colors.ENDC + f" | Mills: "+ Colors.GREEN + f"{mills_angle:.2f}" + Colors.ENDC)
             break
         else:
             print("Invalid input. Please try again.")
 
-    print(f"Distance(m): "+ Colors.BLUE+f"{range_to_target:.2f}"+Colors.ENDC)
     print(f"Required Elevation(Mils): " + Colors.RED + f"{elevation_mils}" + Colors.ENDC)
     end_menu()
 
