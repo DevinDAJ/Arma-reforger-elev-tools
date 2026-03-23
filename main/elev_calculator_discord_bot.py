@@ -1,3 +1,8 @@
+import nacl.signing
+import nacl.exceptions
+from http.server import BaseHTTPRequestHandler
+import json, os, re, requests, time
+
 import os, json
 import nacl
 PUBLIC_KEY          = os.environ["DISCORD_PUBLIC_KEY"]
@@ -45,17 +50,9 @@ class handler(BaseHTTPRequestHandler):
                 # your logic goes here
 
             if payload.get("type") == InteractionType.MESSAGE_COMPONENT:
-                custom_id = payload["data"]["custom_id"]
-                user_id = payload["member"]["user"]["id"]
-                guild_id = payload["guild_id"]
-                handle = extract_handle_from_embed(payload)  # <- You need to extract this from embed
+                # your additional logic to handle component interaction goes here
 
-                vote_type = 1 if custom_id == "vote_up" else 0
-
-                # ✅ Save/Upsert vote
-                upsert_vote(user_id, handle, vote_type)
-
-                # Send an ephemeral response to acknowledge
+                # Only if you need to Send an ephemeral response to acknowledge
                 return self._json({
                     "type": InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     "data": {
