@@ -9,26 +9,29 @@ class Colors:
     ENDC = '\033[0m'   # Reset color
 
 # Handle input
-def get_ballistic_data():
+def get_ballistic_data(range_to_target):
     # Get data from config ballistic data
     list_data = list(ballistic_data_info.keys())
-    print("Available ballistic data:")
+    print("Available ballistic type:")
     # Display the menu choice
-    for i, b_name in enumerate(list_data):
+    i=0
+    available_type = []
+    for b_name in enumerate(list_data):        
         range_list = ballistic_data_info[b_name].keys()
         min_range = min(range_list)
         max_range = max(range_list)
-        print(f"{i+1}. {b_name} " +" | Supported Range(m): "+f"{min_range}-{max_range}")
+        if min_range <= range_to_target <= max_range:
+            available_type.append(b_name)
+            i+=1
+            print(f"{i}. {b_name} " +" | Supported Range(m): "+f"{min_range}-{max_range}")
     # Handle user input
     while True:
         try:
-            select_data = int(input(f"Select the following ballistic data: "))
-            if 1 <= select_data <= len(list_data):
-                selected_key = list_data[select_data - 1]
-                selected_min_range = min(ballistic_data_info[selected_key].keys())
-                selected_max_range = max(ballistic_data_info[selected_key].keys())
+            select_data = int(input(f"Select the following ballistic type: "))
+            if 1 <= select_data <= len(available_type):
+                selected_key = available_type[select_data - 1]
                 print(f"You Selected {selected_key}\n")
-                return ballistic_data_info[selected_key], selected_min_range, selected_max_range
+                return selected_key
             else:
                 print("Invalid Selection!")
         except ValueError as e:
@@ -77,7 +80,9 @@ def end_menu():
 
 # Running main program
 def main():
-    ballistic_data, ballistic_min_range, ballistic_max_range = get_ballistic_data()
+    ballistic_type = get_ballistic_data()
+    
+    
     while True:
         measurement_method = input("Manual measurement (Without Coordinates)? Y/N: ")
         if measurement_method.lower() == "y":
